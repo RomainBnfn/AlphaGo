@@ -44,7 +44,16 @@ class myPlayer(PlayerInterface):
 
         # Get the list of all possible moves
         moves = self._board.legal_moves()  # Dont use weak_legal_moves() here!
-
+        m = self._board._historyMoveNames
+        print('')
+        print('')
+        print('')
+        print('')
+        print("all moves : ", m)
+        print('')
+        print('')
+        print('')
+        
         # Let's plot some board probabilities
         import go_plot
 
@@ -52,20 +61,21 @@ class myPlayer(PlayerInterface):
         evals = np.zeros(82)
               
         node = self._actualNode
-        depth = 5
-        nbRollOut = 5
+        
+        depth = 3
+        nbRollOut = 3
+        
         for i in range(depth):
             node.developeBranch(nbRollOut)
             node = node.chooseBranchToDevelope() # Pas spécialement à partir du plus petit noeud
         
         #Evaluate
-        childrenScore = self._actualNode.childrenScore
+        childrenScore = self._actualNode.childrenN
         for i in range(len(self._actualNode.children)):
             node = self._actualNode.children[i]
             childMove = node.move
             score = childrenScore[i]
-            
-            print(f"Move : {childMove}, score: {score}")
+        
             x, y = Goban.Board.unflatten(childMove)
             index = fromXYToIndex(x, y)
             evals[index] = score
