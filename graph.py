@@ -8,7 +8,7 @@ class Graph:
     
     def __init__(self, board, color):
         # Initilialise le graph à une certaine position pour une certaine couleur.
-        self.racineNode = Node(None, board, None, color)
+        self.racineNode = Node(None, None, color)
         self.board = board
         self.c = 0
         
@@ -52,20 +52,21 @@ class Graph:
         self.developNode(node, nbRollOut)
     
     def getMoveProbas(self):
-        tauInv = 1 / self.tau
+        tauInv = 1 / self.tau()
         #
-        childrenN = np.array(self.racineNode.ChildrenN)
+        childrenN = np.array(self.racineNode.childrenN)
         sumNTau = 0
-        for N in ChildrenN:
+        for N in childrenN:
             sumNTau += N ^ tauInv
         #
         probas = np.zeros(82)
         for i in range(len(childrenN)):
-            node = self._actualNode.children[i]
+            node = self.racineNode.children[i]
             x, y = Goban.Board.unflatten(node.move)
-            index = fromXYToIndex(x, y)
+            index = Goban.fromXYToIndex(x, y)
             probas[index] = node.N ^ tauInv / sumNTau
-        probas = probas / np.sum(probas) # normalize
+            print("PROBABILITE : ", node.N ^ tauInv / sumNTau)
+        #probas = probas / np.sum(probas) # normalize
         return probas
         
     def developNode(self, node, nbRollOut):

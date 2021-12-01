@@ -47,7 +47,9 @@ class myPlayer(PlayerInterface):
         if self._board.is_game_over():
             print("Referee told me to play but the game is over!")
             return "PASS"
+        
         graph = self.getGraph()
+        graph.train(3, 3)
         probas = graph.getMoveProbas()
         
         # Let's plot some board probabilities
@@ -55,12 +57,11 @@ class myPlayer(PlayerInterface):
         go_plot.plot_play_probabilities(self._board, probas)
         plt.show()
 
-        move = moves[np.argmax(probas)]
+        move = probas[np.argmax(probas)]
         # Correct number for PASS
         if move == 81:
             move = -1
         self._board.push(move)
-        
         # move is an internal representation. To communicate with the interface I need to change if to a string
         return Goban.Board.flat_to_name(move)
 
