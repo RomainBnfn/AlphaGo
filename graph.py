@@ -8,7 +8,7 @@ class Graph:
     
     def __init__(self, board, color):
         # Initilialise le graph à une certaine position pour une certaine couleur.
-        self.racineNode = Node(None, board, None, color) 
+        self.racineNode = Node(None, board, None, color)
         self.board = board
         self.c = 0
         
@@ -40,14 +40,34 @@ class Graph:
             self.setRacine(node)
         # Exploration 
         for _ in range(depth):
-            node = self.chooseANodeToDevelop()
-            self.developNode(node, nbRollOut)
-            self.c += 1
+            self.developBranch(nbRollOut)
+        self.c += 2 # Deux tours entre chaque train
     
-    def chooseANodeToDevelop(self):
-        # tau here
-        return
+    def developBranch(self, nbRollOut):
+        node = self.racineNode
+        while node.hasBeenExplored:
+            # On descend jusqu'à trouver une branche non explorée
+            index = np.argmax(node.childrenScore)
+            node = node.children[index]
+        self.developNode(node, nbRollOut)
     
+    def getMoveProbas(self):
+        tauInv = 1 / self.tau
+        #
+        childrenN = np.array(self.racineNode.ChildrenN)
+        sumNTau = 0
+        for N in ChildrenN:
+            sumNTau += N ^ tauInv
+        #
+        probas = np.zeros(82)
+        for i in range(len(childrenN)):
+            node = self._actualNode.children[i]
+            x, y = Goban.Board.unflatten(node.move)
+            index = fromXYToIndex(x, y)
+            probas[index] = node.N ^ tauInv / sumNTau
+        probas = probas / np.sum(probas) # normalize
+        return probas
+        
     def developNode(self, node, nbRollOut):
         node.exploreChildren(self.board, nbRollOut)
     
@@ -163,14 +183,6 @@ class Node:
         self._Q = wins / nbRollOut
         return self._Q
     
-    def evaluateU(self, tau):
-        tauInv = 1/tau
-        if not self.hasParent:
-            return 0
-        SNb = 0  # Somme des Nb
-        for child in self.parent.children:
-            SNb += child.N
-        return (SNb ^ tauInv) / ((1 + self.N) ^ tauInv) 
     # --
     #
 
@@ -200,6 +212,15 @@ class Node:
     #           Properties 
     #
 
+    @property
+    def U(self):
+        if not self.hasParent:
+            return 0
+        SNb = 0  # Somme des Nb
+        for child in self.parent.children:
+            SNb += child.N
+        return SNb / (1 + self.N) 
+    
     @property
     def childrenScore(self):
         _childrenScore = []

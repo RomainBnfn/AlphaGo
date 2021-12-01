@@ -32,7 +32,13 @@ class myPlayer(PlayerInterface):
     def __init__(self):
         self._board = Goban.Board()
         self._mycolor = None
-        self._actualNode = Node(None, self._board, None, self._mycolor)
+        self.graph = None
+        
+    def getGraph(self):
+        # Lazy loading car mycolor non définit au début
+        if self.graph is None:
+            self.graph = Graph(Goban.Board, self._mycolor)
+        return self.graph
 
     def getPlayerName(self):
         return "Best Player Player"
@@ -41,60 +47,20 @@ class myPlayer(PlayerInterface):
         if self._board.is_game_over():
             print("Referee told me to play but the game is over!")
             return "PASS"
-
-        # Get the list of all possible moves
-        moves = self._board.legal_moves()  # Dont use weak_legal_moves() here!
-        m = self._board._historyMoveNames
-        print('')
-        print('')
-        print('')
-        print('')
-        print("all moves : ", m)
-        print('')
-        print('')
-        print('')
+        graph = self.getGraph()
+        probas = graph.getMoveProbas()
         
         # Let's plot some board probabilities
         import go_plot
-
-        self._actualNode = Node(None, self._board, None, Goban.Board.flip(self._mycolor))
-        evals = np.zeros(82)
-              
-        node = self._actualNode
-        
-        depth = 3
-        nbRollOut = 3
-        
-        for i in range(depth):
-            node.developeBranch(nbRollOut)
-            node = node.chooseBranchToDevelope() # Pas spécialement à partir du plus petit noeud
-        
-        #Evaluate
-        childrenScore = self._actualNode.childrenN
-        for i in range(len(self._actualNode.children)):
-            node = self._actualNode.children[i]
-            childMove = node.move
-            score = childrenScore[i]
-        
-            x, y = Goban.Board.unflatten(childMove)
-            index = fromXYToIndex(x, y)
-            evals[index] = score
-
-        # Normalize them
-        sum = np.sum(evals)
-        if sum == 0: sum = 1
-        evals /= sum
-
-        # We plot them
-        go_plot.plot_play_probabilities(self._board, evals)
+        go_plot.plot_play_probabilities(self._board, probas)
         plt.show()
 
-        move = moves[np.argmax(evals)]
+        move = moves[np.argmax(probas)]
         # Correct number for PASS
         if move == 81:
             move = -1
         self._board.push(move)
-
+        
         # move is an internal representation. To communicate with the interface I need to change if to a string
         return Goban.Board.flat_to_name(move)
 
