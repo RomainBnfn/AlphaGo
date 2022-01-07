@@ -14,16 +14,8 @@ import random
 
 rd = random.Random()
 
-
-#  On calcule au plus loin possible des U & Q des enfants, pour ensuite les explorer
-#  Puis au moment de la décision, on choisi une branche selon les proba : Na ^(1/t) / Somme ( Nb ^(1/t) )
-#                                                       avec t = 0.5 (ou 1; 2) pour les 4 premiers coups puis -> 0
-
-
-
 def fromXYToIndex(x, y):
     return y * Goban.Board._BOARDSIZE + x
-
 
 class myPlayer(PlayerInterface):
     ''' A random roll player
@@ -37,7 +29,7 @@ class myPlayer(PlayerInterface):
     def getGraph(self):
         # Lazy loading car mycolor non définit au début
         if self.graph is None:
-            self.graph = Graph(Goban.Board, self._mycolor)
+            self.graph = Graph(self._board, self._mycolor)
         return self.graph
 
     def getPlayerName(self):
@@ -50,14 +42,16 @@ class myPlayer(PlayerInterface):
         
         graph = self.getGraph()
         graph.train(3, 3)
-        probas = graph.getMoveProbas()
+        probas = graph.getMoveProbas(fromXYToIndex)
         
         # Let's plot some board probabilities
         import go_plot
         go_plot.plot_play_probabilities(self._board, probas)
         plt.show()
 
-        move = probas[np.argmax(probas)]
+        moves = self._board.legal_moves()
+        move = moves[np.argmax(probas)]
+        
         # Correct number for PASS
         if move == 81:
             move = -1

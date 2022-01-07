@@ -1,8 +1,20 @@
 import numpy as np
 import random
 import Goban
+import math
+from neuronalModel import getEvaluation
 
 rd = random.Random()
+historyPlates = []
+def getPlates():
+    plates = []
+    if len(historyFields) < 9:
+        # 0 padding
+        numberOfPlateMissing = 9 - len(historyFields)
+        [plates.append(np.zeros((1,9,9))) for _ in range(numberOfPlateMissing)]
+    else:
+        plates = historyFields[-9:]
+    return plates
 
 class Graph: 
     
@@ -11,7 +23,7 @@ class Graph:
         self.racineNode = Node(None, None, color)
         self.board = board
         self.c = 0
-        
+    
     def tau(self):
         if self.c < 10:
             return 1
@@ -29,6 +41,8 @@ class Graph:
             depth (number): le nb de profondeur
             nbRollOut (number): le pn de roll out à chaque noeud
         """
+        # Update historyFields
+        self.board
         # Conservation du graph
         moves = self.getTwoLastMoves()
         if len(moves) > 2:
@@ -51,22 +65,21 @@ class Graph:
             node = node.children[index]
         self.developNode(node, nbRollOut)
     
-    def getMoveProbas(self):
-        tauInv = 1 / self.tau()
+    def getMoveProbas(self, fromXYToIndex):
+        tauInv = 1.0 / self.tau()
         #
         childrenN = np.array(self.racineNode.childrenN)
         sumNTau = 0
         for N in childrenN:
-            sumNTau += N ^ tauInv
+            sumNTau += pow(N, tauInv)
         #
         probas = np.zeros(82)
         for i in range(len(childrenN)):
             node = self.racineNode.children[i]
             x, y = Goban.Board.unflatten(node.move)
-            index = Goban.fromXYToIndex(x, y)
-            probas[index] = node.N ^ tauInv / sumNTau
-            print("PROBABILITE : ", node.N ^ tauInv / sumNTau)
-        #probas = probas / np.sum(probas) # normalize
+            index = fromXYToIndex(x, y)
+            probas[index] = pow(node.N, tauInv) / sumNTau
+        probas = probas / np.sum(probas) # normalize
         return probas
         
     def developNode(self, node, nbRollOut):
@@ -145,16 +158,18 @@ class Node:
         if self.hasBeenExplored:
             return
         #
-        compteur = self.goToOurMove()
+        compteur = self.goToOurMove(board)
         colorNextMove = Goban.Board.flip(self.color)
+        # Use 
+        
         for move in board.legal_moves():
-            node = Node(move, board, self, colorNextMove)
+            node = Node(move, self, colorNextMove)
             node.evaluateQ(board, nbRollOut)
             node.N += 1
             # Explore older nodes
             self.N += 1
             self.visitParents()
-        self.undoMoves(compteur)
+        self.undoMoves(board, compteur)
         return self.children
 
     def evaluateQ(self, board, nbRollOut):
@@ -179,7 +194,7 @@ class Node:
             res = board.result()
             if (res == '1-0' and self.color == 1) or (res == '0-1' and self.color == 2):
                 wins += 1
-            self.undoMoves(compteur)
+            self.undoMoves(board, compteur)
         board.pop()
         self._Q = wins / nbRollOut
         return self._Q

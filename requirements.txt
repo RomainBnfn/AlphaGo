@@ -1,0 +1,8 @@
+tensorflow
+keras
+os
+urllib
+gzip
+json
+numpy
+random
