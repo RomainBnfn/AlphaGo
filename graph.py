@@ -80,18 +80,14 @@ class Graph:
     
     def getMoveProbas(self, fromXYToIndex):
         tauInv = 1.0 / self.tau()
-        #
-        childrenN = np.array(self.racineNode.childrenN)
         sumNTau = 0
-        for N in childrenN:
-            sumNTau += pow(N, tauInv)
         #
         probas = np.zeros(82)
-        for i in range(len(childrenN)):
-            node = self.racineNode.children[i]
-            x, y = Goban.Board.unflatten(node.move)
-            index = fromXYToIndex(x, y)
-            probas[index] = pow(node.N, tauInv) / sumNTau
+        for node in self.racineNode.children:
+            move = node.move
+            sumNTau += pow(node.N, tauInv)
+            probas[move] = pow(node.N, tauInv)
+        probas = probas / sumNTau
         probas = probas / np.sum(probas) # normalize
         return probas
         
@@ -175,19 +171,14 @@ class Node:
         colorNextMove = Goban.Board.flip(self.color)
         # The get Evaluation fct return the evaluation of any move, even if they are unlegal
         childrenScores = getEvaluation( graph.getPlates() )
-        
-        legal_moves = board.legal_moves()
-        
-        # So we have to fine which ones are legal
-        for move in range(-1, len(childrenScores)-1 ):
-            if move in legal_moves:
-                score = childrenScores[move+1]
-                node = Node(move, self, colorNextMove)
-                node.defineQ(score)
-                node.N += 1
-                # Explore older nodes
-                self.N += 1
-                self.visitParents()
+        for move in board.legal_moves():
+            score = childrenScores[0][move]
+            node = Node(move, self, colorNextMove)
+            node.defineQ(score)
+            node.N += 1
+            # Explore older nodes
+            self.N += 1
+            self.visitParents()
         self.undoMoves(board, compteur)
         return self.children
 
@@ -258,7 +249,7 @@ class Node:
         SNb = 0  # Somme des Nb
         for child in self.parent.children:
             SNb += child.N
-        return SNb / (1 + self.N) 
+        return self.N / (1.0 + SNb)
     
     @property
     def childrenScore(self):
@@ -266,13 +257,6 @@ class Node:
         for child in self.children:
             _childrenScore.append(child.U + child.Q)
         return _childrenScore
-
-    @property
-    def childrenN(self):
-        _childrenN = []
-        for child in self.children:
-            _childrenN.append(child.N)
-        return _childrenN
     
     @property
     def hasBeenExplored(self):

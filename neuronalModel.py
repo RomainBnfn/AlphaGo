@@ -20,10 +20,10 @@ model = None
 def getModel():
   global model
   if model is None:
-    model = keras.models.load_model("models/after_20_epochs.h5")
+    model = keras.models.load_model("models/current_model.h5")
   return model
 
 def getEvaluation( plates ):
   plates = np.reshape(plates, (1, 9, 9, 9))
   val, policy = getModel().predict(plates)
-  return val
+  return policy
