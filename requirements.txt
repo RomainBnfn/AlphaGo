@@ -1,8 +1,4 @@
-tensorflow
-keras
-os
-urllib
-gzip
-json
-numpy
-random
+tensorflow==2.7.0
+keras==2.7.0
+numpy==1.22.1
+matplotlib==3.5.1

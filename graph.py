@@ -5,16 +5,6 @@ import math
 from neuronalModel import getEvaluation
 
 rd = random.Random()
-historyPlates = []
-def getPlates():
-    plates = []
-    if len(historyFields) < 9:
-        # 0 padding
-        numberOfPlateMissing = 9 - len(historyFields)
-        [plates.append(np.zeros((1,9,9))) for _ in range(numberOfPlateMissing)]
-    else:
-        plates = historyFields[-9:]
-    return plates
 
 class Graph: 
     
@@ -24,6 +14,31 @@ class Graph:
         self.board = board
         self.c = 0
     
+    def getPlates(self):
+        plates = []
+        moves = []
+        
+        for i in range( min(9, 
+                            len(self.board._historyMoveNames) ) ):
+            board = np.array( self.board._board )
+            board = np.reshape(board, (9, 9))
+            plates.insert(0, board) #from older to newer
+            #
+            move = self.board._historyMoveNames[-1]
+            moves.insert(0, move)
+            self.board.pop()
+        # restore
+        for move in moves:
+            self.board.push( Goban.Board.name_to_flat(move) )
+            
+        if len(plates) < 9:
+            # 0 padding
+            numberOfPlateMissing = 9 - len(plates)
+            [plates.insert(0, np.zeros((9, 9))) for _ in range(numberOfPlateMissing)]
+        else:
+            plates = plates[-9:]
+        return np.array(plates)
+
     def tau(self):
         if self.c < 10:
             return 1
@@ -33,16 +48,14 @@ class Graph:
         self.racineNode = node
         node.makeRacine()
     
-    def train(self, depth, nbRollOut):
-        """Entraine le graph avec [depth] nouvelles profondeurs avec [nbRollOut] nombre de 
-        roll out à chaque noeud 
+    def train(self, depth):
+        """Entraine le graph avec [depth] nouvelles profondeurs 
 
         Args:
             depth (number): le nb de profondeur
-            nbRollOut (number): le pn de roll out à chaque noeud
         """
-        # Update historyFields
-        self.board
+        self.getPlates()
+
         # Conservation du graph
         moves = self.getTwoLastMoves()
         if len(moves) > 2:
@@ -50,20 +63,20 @@ class Graph:
             canConserve, node = self.canConserve()
             if not canConserve:
                 node = Node(Node, None, Goban.Board.flip(self.color) )
-                depth += 1 # On rajoute de la depth car l'arbre a été reconstruit
+                depth += 1 # On rajoute de la depth car l'arbre vient juste d'être reconstruit
             self.setRacine(node)
         # Exploration 
         for _ in range(depth):
-            self.developBranch(nbRollOut)
+            self.developBranch()
         self.c += 2 # Deux tours entre chaque train
     
-    def developBranch(self, nbRollOut):
+    def developBranch(self):
         node = self.racineNode
         while node.hasBeenExplored:
             # On descend jusqu'à trouver une branche non explorée
             index = np.argmax(node.childrenScore)
             node = node.children[index]
-        self.developNode(node, nbRollOut)
+        self.developNode(node)
     
     def getMoveProbas(self, fromXYToIndex):
         tauInv = 1.0 / self.tau()
@@ -82,8 +95,8 @@ class Graph:
         probas = probas / np.sum(probas) # normalize
         return probas
         
-    def developNode(self, node, nbRollOut):
-        node.exploreChildren(self.board, nbRollOut)
+    def developNode(self, node):
+        node.exploreChildren(self.board, self)
     
     def canConserve(self):
         twoLastMoves = self.getTwoLastMoves()
@@ -154,30 +167,40 @@ class Node:
             parent.N += 1
             parent = parent.parent 
             
-    def exploreChildren(self, board, nbRollOut):
+    def exploreChildren(self, board, graph):
         if self.hasBeenExplored:
             return
         #
         compteur = self.goToOurMove(board)
         colorNextMove = Goban.Board.flip(self.color)
-        # Use 
+        # The get Evaluation fct return the evaluation of any move, even if they are unlegal
+        childrenScores = getEvaluation( graph.getPlates() )
         
-        for move in board.legal_moves():
-            node = Node(move, self, colorNextMove)
-            node.evaluateQ(board, nbRollOut)
-            node.N += 1
-            # Explore older nodes
-            self.N += 1
-            self.visitParents()
+        legal_moves = board.legal_moves()
+        
+        # So we have to fine which ones are legal
+        for move in range(-1, len(childrenScores)-1 ):
+            if move in legal_moves:
+                score = childrenScores[move+1]
+                node = Node(move, self, colorNextMove)
+                node.defineQ(score)
+                node.N += 1
+                # Explore older nodes
+                self.N += 1
+                self.visitParents()
         self.undoMoves(board, compteur)
         return self.children
 
+    def defineQ(self, score):
+        self._Q = score
+        
+    # OLD : with roll out
     def evaluateQ(self, board, nbRollOut):
         """Evaluation de Q -> EN ÉTANT AU NOEUD PARENT PRECEDENT (sur le Board)
 
         Args:
             board ([Goban.Board]): Le plateau
-            nbRollOut ([int]): Le nb de roll out
+            nbRollOut ([number]) : Le nombre de roll out
 
         Returns:
             [double]: Q

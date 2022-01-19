@@ -13,7 +13,7 @@ from graph import *
 import random
 
 rd = random.Random()
-
+depth = 3
 def fromXYToIndex(x, y):
     return y * Goban.Board._BOARDSIZE + x
 
@@ -41,7 +41,7 @@ class myPlayer(PlayerInterface):
             return "PASS"
         
         graph = self.getGraph()
-        graph.train(3, 3)
+        graph.train(depth) 
         probas = graph.getMoveProbas(fromXYToIndex)
         
         # Let's plot some board probabilities

@@ -24,9 +24,6 @@ def getModel():
   return model
 
 def getEvaluation( plates ):
+  plates = np.reshape(plates, (1, 9, 9, 9))
   val, policy = getModel().predict(plates)
-  print(val)
-  print(np.array(policy).shape)
-  
-plates = np.zeros((1,9,9,9))
-getEvaluation(plates)
+  return val
