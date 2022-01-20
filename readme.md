@@ -15,18 +15,24 @@ L'organisation du MCTS est dans le fichier `graph.py`, dans les class `Node` et 
 ### Réseau neuronal
 [Description]
 
-## Fil d'éxécution du player
-**Exécution**
+## Fil d'éxécution d'une partie
 
-+ Création du player: 
-+ Création du graph (unique)
-+ getPlayerMove()
-  + train _graph() (parler de depth)
-  + Conservation ?
-  + Choisir une branche à développer
-    + Développer 
-    + Coups possibles
-    + Couts des coups
-+ graph.probas()
-    + Selon N et pas les couts
-+  move
++ `GogolePlayer.__init__()` : Création du player 
++ `Graph.__init__()` : Création du graph
++ Tant que la partie n'est pas finie:
+  + `MyPlayer.getPlayerMove()` : On demande au player le move qu'il veut jouer
+    + `Graph.train()` : On veut explorer le graph avec un variable `depth` qui représente le nombre de branche explorées (sur un cran)
+      + `Graph.canConserve()` -> Est ce qu'on peut conserver le graph ou repartir sur un nouveau noeud racine ?
+      + On répète `depth` fois : 
+        + `Graph.developBranch()` : On descend les noeuds en prennant le meilleur enfant (U + Q) 
+        + `Node.exploreChildren()` : On regarde tous les coups possible à la suite du node, et on calcul U et Q avec `Node.defineU()` et `Node.defineQ()` grace au réseau de neurones chargé dans le fichier `neuronalModel.py`.
+    + `Graph.probas()` : On récupère les probas de jouer chaque coup (à partir des N et pas U, Q).
+    + On effectue le meilleur coup possible.
++ Fin de partie, on regarde qui a gagné.
+
+## Résulats
+
+Au début du premier tour du player, il y a un petit délai le temps que TensorFlow & le modèle neuronal load. Ensuite, on peut noter un temps non négligeable d'attente entre chaque coup (~20sec sur un mauvais CPU portable) pour 3 de depth (voir `graph.py`).
+
+On arrive tout de même avec un coup très significatif à chaque étape.
+[Un résultat du plateau à une étape](https://i.ibb.co/GtT0ZsX/AlphaGo.png)

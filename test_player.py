@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+''' This file is used to test the gogolePlayer aggainst a random player.
+    Don't forget to change the number of game to the wanted value.
+'''
+
 import Goban 
 import importlib
 import time
@@ -7,16 +12,22 @@ import randomPlayer
 import gogolePlayer
 import random
 
+######################################
+#        C o n s t a n t s           #
+######################################
+
+nb_games = 5
+
+######################################
+ 
 b = Goban.Board()
 nb_win = 0
 nb_deuce = 0
-nb_games = 5
-
 for U in range(nb_games):
     b.reset()
     players = [ randomPlayer.myPlayer(), gogolePlayer.myPlayer()]
     
-    print('Game ', U+1, '/100')
+    print('Game ', U+1, '/', nb_games)
     i = random.randint(0, 1)
     players[1-i].newGame(Goban.Board._BLACK)
     players[i].newGame(Goban.Board._WHITE)
@@ -64,10 +75,10 @@ for U in range(nb_games):
             print("ERROR")
     elif result == "1-0" and color == b._WHITE:
         nb_win += 1
+        
     elif result == "0-1" and color == b._BLACK:
         nb_win += 1
-    else:
-        # TODO
+    elif result == "1/2-1/2":
         nb_deuce += 1
 
 print("Wins: ", nb_win, "/", nb_games, "(", 1.*nb_win/nb_games,")")

@@ -1,26 +1,30 @@
 # -*- coding: utf-8 -*-
-''' This is the famous random player which (almost) always looses.
+''' This is the file of our player.
+    He takes some times to do the first choice because he need TF and the model to load.
 '''
 
 import Goban
 from playerInterface import *
-
 import numpy as np
 import matplotlib.pyplot as plt
 import randomPlayer
 from graph import *
- 
 import random
-
 rd = random.Random()
-depth = 3
-def fromXYToIndex(x, y):
-    return y * Goban.Board._BOARDSIZE + x
+
+######################################
+#        C o n s t a n t s           #
+######################################
+
+depth = 3 # this params is the number of time that a branch 
+# is explored in the graph (this isn't really the depth of 
+# the grah)
+
+######################################
 
 class myPlayer(PlayerInterface):
-    ''' A random roll player
+    ''' The GoGole Player
     '''
-
     def __init__(self):
         self._board = Goban.Board()
         self._mycolor = None
@@ -42,12 +46,12 @@ class myPlayer(PlayerInterface):
         
         graph = self.getGraph()
         graph.train(depth) 
-        probas = graph.getMoveProbas(fromXYToIndex)
+        probas = graph.getMoveProbas()
         
         # Let's plot some board probabilities
         import go_plot
-        #go_plot.plot_play_probabilities(self._board, probas)
-        #plt.show()
+        go_plot.plot_play_probabilities(self._board, probas)
+        plt.show()
 
         move = np.argmax(probas)
         # Correct number for PASS
