@@ -46,15 +46,14 @@ class myPlayer(PlayerInterface):
         
         # Let's plot some board probabilities
         import go_plot
-        go_plot.plot_play_probabilities(self._board, probas)
-        plt.show()
+        #go_plot.plot_play_probabilities(self._board, probas)
+        #plt.show()
 
-        moves = self._board.legal_moves()
-        move = moves[np.argmax(probas)]
-        
+        move = np.argmax(probas)
         # Correct number for PASS
         if move == 81:
             move = -1
+            
         self._board.push(move)
         # move is an internal representation. To communicate with the interface I need to change if to a string
         return Goban.Board.flat_to_name(move)

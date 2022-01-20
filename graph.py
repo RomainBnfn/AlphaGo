@@ -17,7 +17,6 @@ class Graph:
     def getPlates(self):
         plates = []
         moves = []
-        
         for i in range( min(9, 
                             len(self.board._historyMoveNames) ) ):
             board = np.array( self.board._board )
@@ -54,15 +53,13 @@ class Graph:
         Args:
             depth (number): le nb de profondeur
         """
-        self.getPlates()
-
         # Conservation du graph
         moves = self.getTwoLastMoves()
-        if len(moves) > 2:
+        if len(moves) == 2:
             # Le jeu a déjà au moins 2 coups joués
             canConserve, node = self.canConserve()
             if not canConserve:
-                node = Node(Node, None, Goban.Board.flip(self.color) )
+                node = Node(Node, None, Goban.Board.flip(self.racineNode.color) )
                 depth += 1 # On rajoute de la depth car l'arbre vient juste d'être reconstruit
             self.setRacine(node)
         # Exploration 
@@ -169,12 +166,16 @@ class Node:
         #
         compteur = self.goToOurMove(board)
         colorNextMove = Goban.Board.flip(self.color)
+        
         # The get Evaluation fct return the evaluation of any move, even if they are unlegal
-        childrenScores = getEvaluation( graph.getPlates() )
+        _, childrenScores = getEvaluation( graph.getPlates() )
+        
         for move in board.legal_moves():
             score = childrenScores[0][move]
+            #
             node = Node(move, self, colorNextMove)
-            node.defineQ(score)
+            node.defineQ(board, graph) # val from NN
+            node.defineU(score)
             node.N += 1
             # Explore older nodes
             self.N += 1
@@ -182,8 +183,12 @@ class Node:
         self.undoMoves(board, compteur)
         return self.children
 
-    def defineQ(self, score):
-        self._Q = score
+    def defineQ(self, board, graph):
+        # From parent
+        board.push(self.move)
+        val, _ = getEvaluation( graph.getPlates() )
+        self._Q = val
+        board.pop()
         
     # OLD : with roll out
     def evaluateQ(self, board, nbRollOut):
@@ -217,8 +222,8 @@ class Node:
     #
 
     def makeRacine(self) :
-        self.parent = None
-        self.move = None
+        self._parent = None
+        self._move = None
     
     def undoMoves(self, board, k):
         for i in range(k):
@@ -238,18 +243,19 @@ class Node:
             k += 1
         return k
             
-    # - - - - - - - - - - - - - - - - - -
-    #           Properties 
-    #
-
-    @property
-    def U(self):
+    def defineU(self, score):
         if not self.hasParent:
             return 0
         SNb = 0  # Somme des Nb
         for child in self.parent.children:
             SNb += child.N
-        return self.N / (1.0 + SNb)
+        SNb = math.sqrt(SNb)
+        # score ~ P(s, a) : prediction of NN
+        self._U = score * self.C * SNb/(1.0 + self.N)
+    # - - - - - - - - - - - - - - - - - -
+    #           Properties 
+    #
+
     
     @property
     def childrenScore(self):
@@ -293,6 +299,10 @@ class Node:
     def Q(self):
         return self._Q
 
+    @property
+    def U(self):
+        return self._U
+    
     @property
     def N(self):
         return self._N
