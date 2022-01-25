@@ -4,6 +4,7 @@
 La liste des bibliothèques utilisées pour ce projets est dans le fichier requirements.txt. L'archive pour être extraite à la racine pour bien fonctionner.
 
 Premièrement, ouvrir un terminal et créer un venv avec Python >3.8 et faire la commande `pip install -r requirements.txt`. (Modifier le chemin d'accès vers requirements.txt si nécessaire)
+Installer jupyter lab localement avec `pip install jupyterlab`.
 
 Une fois les différents bibliothèques installées, il est possible de lancer des parties avec la commande `py namedGame.py (X.py) gogolePlayer.py` avec `(X.py)` le nom d'un autre joueur (randomPlauer, gnugoPlayer...). 
 
