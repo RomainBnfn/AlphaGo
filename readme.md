@@ -14,8 +14,18 @@ L'organisation du MCTS est dans le fichier `graph.py`, dans les class `Node` et 
 
 ### Réseau neuronal
 [Description]
+Le réseau utilisé est le même que dans le papier AlphaGoZero. Il s'agit d'un réseau à convolutions, qui prend les 9 derniers tableaux, et renvoie:
+--> une value: estimation de la probabilité du joueur courant de gagner la partie.
+--> une policy: distribution de probabilités sur 82 valeurs, indiquant quel coup devrait jouer le joueur courant. Il y a 82 coups car il y a toutes les actions du plateau et il est possible de ne pas jouer.
 
-## Fil d'éxécution d'une partie
+Le réseau est créé dans le notebook value_and_policy_networks.ipynb. Attention à la première cellule qu'il est nécessaire de modifier si vous travaillez sur google colab, d'enlever sinon.
+
+
+Dans les 8 premiers coups, les tableaux insérés pour compléter les 9 entrées sont des tableaux de 0.
+Le modèle créé est ensuite sauvegaré à l'aide de callbacks keras si l'entraînement est interrompu.
+Le modèle final est sauvegardé dans 'models/' afin d'être facilement chargé pendant que l'on déroule une partie.
+
+## Fil d'exécution d'une partie
 
 + `GogolePlayer.__init__()` : Création du player 
 + `Graph.__init__()` : Création du graph

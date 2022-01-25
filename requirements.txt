@@ -2,3 +2,9 @@ tensorflow==2.7.0
 keras==2.7.0
 numpy==1.22.1
 matplotlib==3.5.1
+opencv-python==4.5.4.58
+scikit-learn==1.0.1
+urllib3==1.25.9
+json5==0.9.5
+jsonschema==3.2.0
+jupyterlab==2.1.5
