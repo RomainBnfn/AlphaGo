@@ -47,4 +47,5 @@ Le modèle final est sauvegardé dans 'models/' afin d'être facilement chargé 
 Au début du premier tour du player, il y a un petit délai le temps que TensorFlow & le modèle neuronal load. Ensuite, on peut noter un temps non négligeable d'attente entre chaque coup (~20sec sur un mauvais CPU portable) pour 3 de depth (voir `graph.py`).
 
 On arrive tout de même avec un coup très significatif à chaque étape.
-[Un résultat du plateau à une étape](https://i.ibb.co/GtT0ZsX/AlphaGo.png)
+
+![Un résultat du plateau à une étape](https://i.ibb.co/GtT0ZsX/AlphaGo.png)
