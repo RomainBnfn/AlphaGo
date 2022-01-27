@@ -1,5 +1,6 @@
 # AlphaGo
-[Description brève du projet]
+Ce projet s'inscrit dans le module Applications de l'Intelligence Artificielle. Il a pour objectif de réimplémenter AlphaGo, la célèbre IA qui a battu le champion du monde de Go en 2015. Nous avons repris les articles parus à l'époque, et d'autres qui voyaient l'évolution d'AlphaGo en AlphaGoZero.
+
 ## Installation
 La liste des bibliothèques utilisées pour ce projets est dans le fichier requirements.txt. L'archive pour être extraite à la racine pour bien fonctionner.
 
@@ -14,7 +15,7 @@ Ce projet est divisé en deux parties, une partie utilisant la logique et struct
 L'organisation du MCTS est dans le fichier `graph.py`, dans les class `Node` et `Graph`. La première classe `Node` représente un noeud du graph d'exploration des coups à jouer. Un noeud est associé à un coup possible, a un parent et des enfants et stock les différentes valeurs/évalutation du coup. La deuxième classe `Graph` représente le graph d'exploration des différents couts possible. Il possède un noeud racine (source de l'exploration) et est conservé ou reconstruit selon les coups joués.
 
 ### Réseau neuronal
-[Description]
+
 Le réseau utilisé est le même que dans le papier AlphaGoZero. Il s'agit d'un réseau à convolutions, qui prend les 9 derniers tableaux, et renvoie:
 --> une value: estimation de la probabilité du joueur courant de gagner la partie.
 --> une policy: distribution de probabilités sur 82 valeurs, indiquant quel coup devrait jouer le joueur courant. Il y a 82 coups car il y a toutes les actions du plateau et il est possible de ne pas jouer.
