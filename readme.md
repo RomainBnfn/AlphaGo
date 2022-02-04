@@ -48,4 +48,7 @@ Au début du premier tour du player, il y a un petit délai le temps que TensorF
 
 On arrive tout de même avec un coup très significatif à chaque étape.
 
-![Un résultat du plateau à une étape](https://i.ibb.co/GtT0ZsX/AlphaGo.png)
+![Un résultat du plateau à une étape](https://raw.githubusercontent.com/RomainBnfn/AlphaGo/main/images/play1.PNG)
+![Un résultat du plateau à une étape](https://raw.githubusercontent.com/RomainBnfn/AlphaGo/main/images/play2.PNG)
+
+*(Il n'y a que très peu de recherche de coups car on a défini un coef de recherche de 3 seulement)*
